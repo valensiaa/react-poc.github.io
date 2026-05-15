@@ -1,66 +1,91 @@
 .widget {
   font-family: sans-serif;
-  max-width: 420px;
-  padding: 2rem;
+  max-width: 480px;
+  padding: 1.75rem;
   border-radius: 12px;
   background: #fff;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
 }
 
-.widget__title {
-  margin: 0 0 0.5rem;
-  font-size: 1.4rem;
-  color: #1a1a1a;
-}
-
-.widget__description {
-  margin: 0 0 1.5rem;
-  font-size: 0.95rem;
-  color: #555;
-  line-height: 1.5;
-}
-
-.widget__description code {
-  background: #f0f0f0;
-  padding: 0.1em 0.4em;
-  border-radius: 4px;
-  font-size: 0.9em;
-}
-
-.widget__counter {
+.widget__header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 1rem;
+  padding-left: 0.875rem;
+  border-left: 4px solid;
   margin-bottom: 1rem;
 }
 
-.widget__btn {
-  width: 40px;
-  height: 40px;
-  border: 2px solid #2d5a2d;
-  background: transparent;
-  color: #2d5a2d;
-  border-radius: 8px;
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-.widget__btn:hover {
-  background: #2d5a2d;
-  color: #fff;
-}
-
-.widget__count {
-  font-size: 2rem;
+.widget__name {
+  margin: 0;
+  font-size: 1.15rem;
   font-weight: 700;
-  min-width: 3ch;
-  text-align: center;
+  color: #1a1a1a;
+  line-height: 1.3;
+}
+
+.widget__badge {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #fff;
+  padding: 0.25em 0.65em;
+  border-radius: 99px;
+}
+
+.widget__description {
+  margin: 0 0 1.25rem;
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+.widget__specs {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+}
+
+.widget__spec-row:not(:last-child) td {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.widget__spec-label {
+  padding: 0.55rem 0;
+  font-size: 0.85rem;
+  color: #888;
+  width: 45%;
+}
+
+.widget__spec-value {
+  padding: 0.55rem 0;
+  font-size: 0.85rem;
+  font-weight: 600;
   color: #1a1a1a;
 }
 
-.widget__hint {
-  margin: 0;
-  font-size: 0.8rem;
-  color: #999;
+.widget__cta {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.3s;
+}
+
+.widget__cta:hover:not(.is-done) {
+  opacity: 0.88;
+}
+
+.widget__cta.is-done {
+  background: #e8f5e9 !important;
+  color: #2d5a2d;
+  cursor: default;
 }

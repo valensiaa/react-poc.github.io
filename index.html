@@ -19,15 +19,40 @@
         border-left: 3px solid #f0ad4e;
         border-radius: 4px;
       }
+      .page-note code { font-size: 0.9em; }
     </style>
   </head>
   <body>
     <p class="page-note">
-      Local dev preview. In Webflow, only the <code>#react-root</code> div and the script tag are added.
+      Local dev preview — the <code>data-*</code> attributes below simulate what Webflow CMS injects.
+      In Webflow, these values come from bound CMS fields on the Collection Page.
     </p>
 
-    <!-- This is what gets added in Webflow via a Custom HTML Embed element -->
-    <div id="react-root"></div>
+    <!--
+      WEBFLOW IMPLEMENTATION:
+      In Webflow, add a Custom HTML Embed element and bind each data attribute
+      to a CMS field using the purple "+" binding button in the embed editor:
+
+      <div
+        id="react-root"
+        data-name="[Product Name field]"
+        data-description="[Short Description field]"
+        data-color="[Brand Color field]"
+        data-specs="[Specs JSON field]"
+      ></div>
+    -->
+    <div
+      id="react-root"
+      data-name="Spruce Profile 145×22"
+      data-description="Premium spruce cladding, kiln-dried and planed. Suitable for exterior and interior use."
+      data-color="#1a3a5c"
+      data-specs='[
+        { "label": "Width",          "value": "145 mm" },
+        { "label": "Thickness",      "value": "22 mm"  },
+        { "label": "Length",         "value": "5000 mm"},
+        { "label": "Strength class", "value": "C16"    }
+      ]'
+    ></div>
 
     <script type="module" src="/src/main.tsx"></script>
   </body>
