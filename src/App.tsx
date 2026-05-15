@@ -26,7 +26,7 @@ export default function App() {
       <div className="widget__header" style={{ borderLeftColor: data.color as string }}>
         <h2 className="widget__name">{data.name as string}</h2>
         <span className="widget__badge" style={{ background: data.color as string }}>
-          In stock valya
+          In stock jannes
         </span>
       </div>
 
