@@ -54,6 +54,38 @@
       ]'
     ></div>
 
+    <!--
+      GOOGLE MAP WIDGET — WEBFLOW IMPLEMENTATION:
+      In Webflow, add a Custom HTML Embed and bind each data attribute to a
+      CMS field (Site Name, Email, Phone, Address, Latitude, Longitude).
+      If lat/lng aren't in your CMS, look them up on Google Maps and paste
+      the numeric values into data-lat and data-lng.
+
+      <div
+        id="react-map-root"
+        data-name="[Site Name field]"
+        data-email="[Email field]"
+        data-phone="[Phone field]"
+        data-address="[Address field]"
+        data-lat="[Latitude field]"
+        data-lng="[Longitude field]"
+        data-zoom="15"
+      ></div>
+      <script src="https://<your-gh-pages-domain>/widget.js" defer></script>
+    -->
+    <div style="margin-top: 2rem;">
+      <div
+        id="react-map-root"
+        data-name="Stradigi HQ"
+        data-email="hello@stradigi.nl"
+        data-phone="+31 20 123 4567"
+        data-address="Herengracht 100, 1015 BS Amsterdam, Netherlands"
+        data-lat="52.3676"
+        data-lng="4.9041"
+        data-zoom="15"
+      ></div>
+    </div>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
