@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useWebflowData } from './useWebflowData'
 
-const GOOGLE_MAPS_API_KEY = 'AIzaSyDZb6Fw2SUXdJ5P3YyJEryVa8D8dInwh8o'
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined
 
 const GRAYSCALE_STYLE: google.maps.MapTypeStyle[] = [
   { elementType: 'geometry', stylers: [{ saturation: -100 }] },
@@ -31,6 +31,9 @@ function loadGoogleMaps(): Promise<typeof google> {
     return Promise.resolve((window as any).google)
   }
   if (mapsLoaderPromise) return mapsLoaderPromise
+  if (!GOOGLE_MAPS_API_KEY) {
+    return Promise.reject(new Error('Missing VITE_GOOGLE_MAPS_API_KEY in build env'))
+  }
 
   mapsLoaderPromise = new Promise((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>('script[data-google-maps-loader]')
