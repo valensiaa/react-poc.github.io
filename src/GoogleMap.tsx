@@ -52,7 +52,7 @@ function loadGoogleMaps(): Promise<typeof google> {
   return mapsLoaderPromise
 }
 
-interface MapData {
+type MapData = {
   name: string
   email: string
   phone: string
@@ -60,6 +60,7 @@ interface MapData {
   lat: number
   lng: number
   zoom: number
+  [key: string]: string | number
 }
 
 export default function GoogleMap({ elementId = 'react-map-root' }: { elementId?: string }) {
