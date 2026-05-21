@@ -55,34 +55,64 @@
     ></div>
 
     <!--
-      GOOGLE MAP WIDGET — WEBFLOW IMPLEMENTATION:
-      In Webflow, add a Custom HTML Embed and bind each data attribute to a
-      CMS field (Site Name, Email, Phone, Address, Latitude, Longitude).
-      If lat/lng aren't in your CMS, look them up on Google Maps and paste
-      the numeric values into data-lat and data-lng.
+      GOOGLE MAP WIDGET — WEBFLOW IMPLEMENTATION (MULTI-PIN):
 
-      <div
-        id="react-map-root"
-        data-name="[Site Name field]"
-        data-email="[Email field]"
-        data-phone="[Phone field]"
-        data-address="[Address field]"
-        data-lat="[Latitude field]"
-        data-lng="[Longitude field]"
-        data-zoom="15"
-      ></div>
-      <script src="https://<your-gh-pages-domain>/widget.js" defer></script>
+      1. Place ONE map root where the map should appear:
+
+         <div id="react-map-root" data-zoom="11"></div>
+
+         Optional attributes on the root:
+           data-zoom        — zoom level when there is only one pin (ignored with 2+ pins)
+           data-fit-bounds  — set to "false" to disable auto-fit when 2+ pins exist
+
+      2. Add a Collection List (bound to your "Company infos" collection) anywhere
+         on the page. Inside the Collection Item, add a Code Embed:
+
+         <div class="react-map-location"
+              data-name="{{Name}}"
+              data-email="{{Email}}"
+              data-phone="{{Phone}}"
+              data-address="{{Address}}"
+              data-lat="{{Lat}}"
+              data-lng="{{Lng}}"></div>
+
+         The .react-map-location nodes are hidden by CSS — they only feed pin data.
+
+      3. Add the script tag once (e.g. in the page's footer custom code):
+
+         <script src="https://<your-gh-pages-domain>/widget.js" defer></script>
     -->
     <div style="margin-top: 2rem;">
+      <!-- 1. Map root -->
+      <div id="react-map-root" data-zoom="11"></div>
+
+      <!-- 2. Pin sources (in Webflow these come from a Collection List, one per Item) -->
       <div
-        id="react-map-root"
-        data-name="Stradigi HQ"
-        data-email="hello@stradigi.nl"
-        data-phone="+31 20 123 4567"
-        data-address="Herengracht 100, 1015 BS Amsterdam, Netherlands"
-        data-lat="52.3676"
-        data-lng="4.9041"
-        data-zoom="15"
+        class="react-map-location"
+        data-name="Stradigi BV"
+        data-email="info@stradigi.eu"
+        data-phone="+31 (0)77 - 234 0888"
+        data-address="Geldersebaan 87, 5931 JM Tegelen"
+        data-lat="51.3480318"
+        data-lng="6.1552843"
+      ></div>
+      <div
+        class="react-map-location"
+        data-name="Stradigi Amsterdam"
+        data-email="amsterdam@stradigi.eu"
+        data-phone="+31 (0)20 - 123 4567"
+        data-address="Damrak 1, 1012 LG Amsterdam"
+        data-lat="52.3740"
+        data-lng="4.8897"
+      ></div>
+      <div
+        class="react-map-location"
+        data-name="Stradigi Rotterdam"
+        data-email="rotterdam@stradigi.eu"
+        data-phone="+31 (0)10 - 987 6543"
+        data-address="Coolsingel 40, 3011 AD Rotterdam"
+        data-lat="51.9225"
+        data-lng="4.4792"
       ></div>
     </div>
 

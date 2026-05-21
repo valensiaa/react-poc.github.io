@@ -91,6 +91,13 @@
 }
 
 /* Google Map widget */
+
+/* Location source nodes — these are CMS-driven Code Embeds inside a Collection List.
+   They exist only to feed pin data to the map and should never render visually. */
+.react-map-location {
+  display: none !important;
+}
+
 .gmap {
   width: 100%;
   height: 480px;

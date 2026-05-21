@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { useWebflowData } from './useWebflowData'
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined
 
@@ -55,45 +54,78 @@ function loadGoogleMaps(): Promise<typeof google> {
   return mapsLoaderPromise
 }
 
-type MapData = {
+type Location = {
   name: string
   email: string
   phone: string
   address: string
   lat: number
   lng: number
-  zoom: number
-  [key: string]: string | number
+}
+
+const DEFAULT_LOCATION: Location = {
+  name: 'Your Site Name',
+  email: 'info@example.com',
+  phone: '+31 00 000 0000',
+  address: 'Please fill in your address',
+  lat: 52.3676,
+  lng: 4.9041,
+}
+
+function parseLocation(el: HTMLElement): Location | null {
+  const lat = Number(el.dataset.lat)
+  const lng = Number(el.dataset.lng)
+  if (!isFinite(lat) || !isFinite(lng)) return null
+  return {
+    name: el.dataset.name || '',
+    email: el.dataset.email || '',
+    phone: el.dataset.phone || '',
+    address: el.dataset.address || '',
+    lat,
+    lng,
+  }
+}
+
+/**
+ * Pins come from one of two places, in priority order:
+ *   1. Any `.react-map-location` elements anywhere on the page — driven by a
+ *      Webflow Collection List (one Code Embed per Collection Item).
+ *   2. Legacy fallback: `data-*` attributes on the map root itself (single pin).
+ *   3. Last resort: a placeholder so dev preview still renders.
+ */
+function collectLocations(root: HTMLElement): Location[] {
+  const childEls = Array.from(document.querySelectorAll<HTMLElement>('.react-map-location'))
+  const childLocations = childEls
+    .map(parseLocation)
+    .filter((l): l is Location => l !== null)
+  if (childLocations.length > 0) return childLocations
+
+  const single = parseLocation(root)
+  if (single) return [single]
+
+  return [DEFAULT_LOCATION]
 }
 
 export default function GoogleMap({ elementId = 'react-map-root' }: { elementId?: string }) {
-  const data = useWebflowData<MapData>(elementId, {
-    name: 'Your Site Name',
-    email: 'info@example.com',
-    phone: '+31 00 000 0000',
-    address: 'Please fill in your address',
-    lat: 52.3676,
-    lng: 4.9041,
-    zoom: 15,
-  })
-
   const mapRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
+    const root = document.getElementById(elementId)
+    const locations = root ? collectLocations(root) : [DEFAULT_LOCATION]
+    const rootZoom = root ? Number(root.dataset.zoom) : NaN
+    const fitBounds = root?.dataset.fitBounds !== 'false'
 
     loadGoogleMaps()
       .then(google => {
         if (cancelled || !mapRef.current) return
 
-        const position = { lat: Number(data.lat), lng: Number(data.lng) }
-
+        const initialCenter = { lat: locations[0].lat, lng: locations[0].lng }
         const map = new google.maps.Map(mapRef.current, {
-          center: position,
-          zoom: Number(data.zoom) || 15,
+          center: initialCenter,
+          zoom: isFinite(rootZoom) ? rootZoom : 15,
           styles: GRAYSCALE_STYLE,
-          disableDefaultUI: false,
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: true,
@@ -101,62 +133,103 @@ export default function GoogleMap({ elementId = 'react-map-root' }: { elementId?
           clickableIcons: false,
         })
 
-        const marker = new google.maps.Marker({
-          position,
-          map,
-          title: data.name,
-          icon: {
-            url: YELLOW_PIN_SVG,
-            scaledSize: new google.maps.Size(40, 52),
-            anchor: new google.maps.Point(20, 52),
-          },
-        })
-
-        const infoContent = `
-          <div class="gmap-tooltip">
-            <h3 class="gmap-tooltip__title">${escapeHtml(data.name)}</h3>
-            <ul class="gmap-tooltip__list">
-              <li><strong>Address:</strong> ${escapeHtml(data.address)}</li>
-              <li><strong>Email:</strong> <a href="mailto:${escapeHtml(data.email)}">${escapeHtml(data.email)}</a></li>
-              <li><strong>Phone:</strong> <a href="tel:${escapeHtml(data.phone.replace(/\s+/g, ''))}">${escapeHtml(data.phone)}</a></li>
-            </ul>
-          </div>
-        `
-
-        const infoWindow = new google.maps.InfoWindow({ content: infoContent })
-
-        let stickyOpen = false
-        let hoverCloseTimer: number | null = null
-
-        const openWindow = () => {
-          if (hoverCloseTimer) { window.clearTimeout(hoverCloseTimer); hoverCloseTimer = null }
-          infoWindow.open({ map, anchor: marker })
-        }
-        const closeSoon = () => {
-          if (stickyOpen) return
-          hoverCloseTimer = window.setTimeout(() => infoWindow.close(), 200)
+        const allWindows: google.maps.InfoWindow[] = []
+        const closeOthers = (current: google.maps.InfoWindow) => {
+          allWindows.forEach(w => {
+            if (w !== current) w.close()
+          })
         }
 
-        marker.addListener('mouseover', openWindow)
-        marker.addListener('mouseout', closeSoon)
-        marker.addListener('click', () => {
-          stickyOpen = !stickyOpen
-          if (stickyOpen) openWindow()
-          else infoWindow.close()
+        const bounds = new google.maps.LatLngBounds()
+
+        locations.forEach(loc => {
+          const position = { lat: loc.lat, lng: loc.lng }
+          bounds.extend(position)
+
+          const marker = new google.maps.Marker({
+            position,
+            map,
+            title: loc.name,
+            icon: {
+              url: YELLOW_PIN_SVG,
+              scaledSize: new google.maps.Size(40, 52),
+              anchor: new google.maps.Point(20, 52),
+            },
+          })
+
+          const infoWindow = new google.maps.InfoWindow({ content: buildInfoContent(loc) })
+          allWindows.push(infoWindow)
+
+          let stickyOpen = false
+          let hoverCloseTimer: number | null = null
+
+          const openWindow = () => {
+            if (hoverCloseTimer) {
+              window.clearTimeout(hoverCloseTimer)
+              hoverCloseTimer = null
+            }
+            closeOthers(infoWindow)
+            infoWindow.open({ map, anchor: marker })
+          }
+          const closeSoon = () => {
+            if (stickyOpen) return
+            hoverCloseTimer = window.setTimeout(() => infoWindow.close(), 200)
+          }
+
+          marker.addListener('mouseover', openWindow)
+          marker.addListener('mouseout', closeSoon)
+          marker.addListener('click', () => {
+            stickyOpen = !stickyOpen
+            if (stickyOpen) openWindow()
+            else infoWindow.close()
+          })
+          infoWindow.addListener('closeclick', () => {
+            stickyOpen = false
+          })
         })
-        infoWindow.addListener('closeclick', () => { stickyOpen = false })
+
+        // With 2+ pins, fit the viewport around all of them.
+        // User can opt out with data-fit-bounds="false" on the root.
+        if (locations.length > 1 && fitBounds) {
+          map.fitBounds(bounds, 64)
+        }
       })
       .catch(err => {
         console.error('Google Maps failed to load', err)
         if (!cancelled) setError('Unable to load map. Check API key and network.')
       })
 
-    return () => { cancelled = true }
-  }, [data.name, data.email, data.phone, data.address, data.lat, data.lng, data.zoom])
+    return () => {
+      cancelled = true
+    }
+  }, [elementId])
 
   if (error) return <div className="gmap-error">{error}</div>
-
   return <div ref={mapRef} className="gmap" />
+}
+
+function buildInfoContent(loc: Location): string {
+  const rows: string[] = []
+  if (loc.address) {
+    rows.push(`<li><strong>Address:</strong> ${escapeHtml(loc.address)}</li>`)
+  }
+  if (loc.email) {
+    rows.push(
+      `<li><strong>Email:</strong> <a href="mailto:${escapeHtml(loc.email)}">${escapeHtml(loc.email)}</a></li>`
+    )
+  }
+  if (loc.phone) {
+    const telLink = loc.phone.replace(/\s+/g, '')
+    rows.push(
+      `<li><strong>Phone:</strong> <a href="tel:${escapeHtml(telLink)}">${escapeHtml(loc.phone)}</a></li>`
+    )
+  }
+  return `
+    <div class="gmap-tooltip">
+      <h3 class="gmap-tooltip__title">${escapeHtml(loc.name || 'Location')}</h3>
+      ${rows.length ? `<ul class="gmap-tooltip__list">${rows.join('')}</ul>` : ''}
+    </div>
+  `
 }
 
 function escapeHtml(value: string): string {
